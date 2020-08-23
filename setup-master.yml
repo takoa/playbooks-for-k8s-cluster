@@ -1,5 +1,5 @@
 ---
-- hosts: k8s-first-master
+- hosts: k8s_first_master
   vars:
     lb: k8slb.local:6443
     kube_directory: /home/ubuntu/.kube/
