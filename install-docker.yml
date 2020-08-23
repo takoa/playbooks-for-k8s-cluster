@@ -1,0 +1,67 @@
+---
+- hosts: k8s
+  vars:
+    docker_repo: deb [arch=arm64] https://download.docker.com/linux/ubuntu focal stable
+  remote_user: ansible
+  become: true
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+        force_apt_get: true
+
+    - name: Install Required System Packages
+      apt:
+        update_cache: true
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+          - python3-pip
+          - libffi-dev
+        state: latest
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: "{{ docker_repo }}"
+        state: present
+
+    - name: Update and Install Docker CE
+      apt:
+        update_cache: true
+        pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        state: latest
+
+    - name: Setup Daemon
+      copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "exec-opts": ["native.cgroupdriver=systemd"],
+            "log-driver": "json-file",
+            "log-opts": {
+              "max-size": "100m"
+            },
+            "storage-driver": "overlay2"
+          }
+
+    - name: Realod Docker
+      systemd:
+        name: docker
+        state: reloaded
+
+    - name: Install Docker Compose
+      pip:
+        name: docker-compose

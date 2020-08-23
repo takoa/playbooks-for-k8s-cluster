@@ -1,0 +1,53 @@
+---
+- hosts: k8s
+  remote_user: ansible
+  become: true
+  tasks:
+    - name: Install Required System Packages
+      apt:
+        update_cache: true
+        pkg:
+          - iptables
+          - arptables
+          - ebtables
+          - apt-transport-https
+          - curl
+        state: latest
+
+    - name: Set to Use legacy nftables
+      alternatives:
+        name: "{{ item }}"
+        path: "/usr/sbin/{{ item }}-legacy"
+      loop:
+        - iptables
+        - ip6tables
+        - arptables
+        - ebtables
+
+    - name: Add Kubernetes GPG key
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+
+    - name: Add Kubernetes Repository
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+
+    - name: Update and Install Kubernetes Packages
+      apt:
+        update_cache: true
+        pkg:
+          - kubelet
+          - kubeadm
+          - kubectl
+        state: latest
+    
+    - name: Hold Kubernetes Packages
+      dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl

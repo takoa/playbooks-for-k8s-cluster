@@ -1,0 +1,41 @@
+---
+- hosts: k8s-masters,!k8s-first-master
+  vars:
+    kube_directory: /home/ubuntu/.kube/
+    dir_owner: ubuntu
+    dir_group: ubuntu
+    join_master_command: |
+      Put your kubeadm join here
+  serial: 1
+  tasks:
+    - name: Join as a Master
+      become: true
+      shell: "{{ join_master_command }}"
+
+    - name: Setup Config Directory
+      file:
+        path: "{{ kube_directory }}"
+        state: directory
+        owner: "{{ dir_owner }}"
+        group: "{{ dir_group }}"
+
+    - name: Setup Config
+      become: true
+      shell: "cp -i /etc/kubernetes/admin.conf {{ kube_directory }}config"
+
+    - name: Set Ownership
+      become: true
+      file:
+        path: "{{ kube_directory }}config"
+        owner: "{{ dir_owner }}"
+        group: "{{ dir_group }}"
+
+- hosts: k8s-workers
+  vars:
+    join_worker_command: |
+      Put your kubeadm join here
+  serial: 1
+  tasks:
+    - name: Join as a worker
+      become: true
+      shell: "{{ join_worker_command }}"

@@ -1,0 +1,41 @@
+---
+- hosts: k8s-first-master
+  vars:
+    lb: k8slb.local:6443
+    kube_directory: /home/ubuntu/.kube/
+    dir_owner: ubuntu
+    dir_group: ubuntu
+    kubeadm_init_out: /home/ubuntu/kubeadm-init-out.txt
+  remote_user: ubuntu
+  tasks:
+    - name: kubeadm init
+      become: true
+      command: kubeadm init --control-plane-endpoint "{{ lb }}" --upload-certs
+      register: output
+
+    - name: Save kubeadm init Result
+      local_action:
+        module: copy
+        content: "{{ output.stdout }}"
+        dest: "{{ kubeadm_init_out }}"
+
+    - name: Setup Config Directory
+      file:
+        path: "{{ kube_directory }}"
+        state: directory
+        owner: "{{ dir_owner }}"
+        group: "{{ dir_group }}"
+
+    - name: Setup Config
+      become: true
+      shell: "cp -i /etc/kubernetes/admin.conf {{ kube_directory }}config"
+
+    - name: Set Ownership
+      become: true
+      file:
+        path: "{{ kube_directory }}config"
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Apply Weave
+      shell: kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"

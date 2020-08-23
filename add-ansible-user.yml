@@ -1,0 +1,22 @@
+---
+- hosts: k8s
+  vars:
+    ssh_public_key: Put your public key here
+  remote_user: ubuntu
+  become: true
+  tasks:
+    - name: Create Ansible user
+      user:
+        name: ansible
+        uid: 1050
+
+    - name: Authorize SSH key
+      authorized_key:
+        user: ansible
+        state: present
+        key: "{{ ssh_public_key }}"
+
+    - name: Create sudoer file
+      copy:
+        dest: "/etc/sudoers.d/ansible"
+        content: "ansible ALL=(ALL) NOPASSWD:ALL"
