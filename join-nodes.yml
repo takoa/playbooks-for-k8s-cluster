@@ -6,6 +6,7 @@
     dir_group: ubuntu
     join_master_command: |
       Put your kubeadm join here
+  remote_user: ansible
   serial: 1
   tasks:
     - name: Join as a Master
@@ -34,6 +35,7 @@
   vars:
     join_worker_command: |
       Put your kubeadm join here
+  remote_user: ansible
   serial: 1
   tasks:
     - name: Join as a worker
