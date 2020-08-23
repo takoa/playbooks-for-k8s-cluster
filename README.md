@@ -1,5 +1,5 @@
-Ansible Playbooks for Setting Up Kubernetes Cluster
-=========================================
+Ansible Playbooks for Setting Up a Kubernetes Cluster
+=====================================================
 
 Ansible playbooks for setting up a stacked highly availabile Kubernetes cluster with Docker and kubeadm.
 
@@ -16,3 +16,4 @@ Note that users and directories specified in the playbooks mostly assume default
 3. ansible-playbook setup-master.yml
 4. Copy kubeadm join commands in {{ kubeadm-init-out }} to join-nodes.yml
 5. ansible-playbook join-nodes.yml
+6. ansible-playbook change-cgroup-driver.yml

@@ -1,0 +1,15 @@
+---
+- hosts: k8s
+  remote_user: ansible
+  become: true
+  tasks:
+    - name: Change cgroup Driver
+      replace:
+        path: /var/lib/kubelet/kubeadm-flags.env
+        regexp: '--cgroup-driver=\w+ '
+        replace: '--cgroup-driver=systemd '
+
+    - name: Restart Kubelet
+      systemd:
+        name: kubelet
+        state: restarted
